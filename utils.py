@@ -179,7 +179,6 @@ class Images_Data(Dataset):
     def __init__(self, data, transform=transforms.ToTensor()):
         self.imgs = data['imgs']
         self.labels = data['anom_label']
-        self.domain = data['classes']
         self.transform = transform
 
     def __len__(self):
