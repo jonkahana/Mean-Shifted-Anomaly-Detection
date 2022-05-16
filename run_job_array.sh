@@ -8,6 +8,7 @@
 #SBATCH --mem=20g
 #SBATCH --time=7-0
 #SBATCH --gres=gpu:1,vmem:20g
+#SBATCH --killable
 
 logs_dir="/cs/labs/yedid/jonkahana/external/Mean-Shifted-Anomaly-Detection/logfiles"
 
