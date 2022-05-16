@@ -114,7 +114,7 @@ def main(args):
     train_model(model, train_loader, test_loader, train_loader_1, device, args)
 
     save_dir = os.path.join(red_panda_project_dir,
-                            f'cache/preprocess/{args.dataset}/mean_shifted__backbone_{args.backbone}')
+                            f'cache/models/{args.dataset}/mean_shifted__backbone_{args.backbone}')
     os.makedirs(save_dir, exist_ok=True)
     torch.save(model.state_dict(), os.path.join(save_dir, 'last.pth'))
 
