@@ -31,7 +31,7 @@ class transform_NumpytoPIL(torch.nn.Module):
         if np.max(img) <= 1:
             img = (img * 255.).astype(np.uint8)
         if img.shape[0] == 3:
-            img = img.transpose(0, 1, 2)
+            img = img.transpose(1, 2, 0)
         return PIL.Image.fromarray(img)
 
 
