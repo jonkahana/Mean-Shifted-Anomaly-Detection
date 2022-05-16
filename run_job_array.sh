@@ -9,9 +9,9 @@
 #SBATCH --time=7-0
 #SBATCH --gres=gpu:1,vmem:20g
 
-logs_dir="/cs/labs/yedid/jonkahana/projects/Red_PANDA/logfiles"
+logs_dir="/cs/labs/yedid/jonkahana/external/Mean-Shifted-Anomaly-Detection/logfiles"
 
-files_dir="/cs/labs/yedid/jonkahana/projects/Red_PANDA"
+files_dir="/cs/labs/yedid/jonkahana/external/Mean-Shifted-Anomaly-Detection"
 files_dir=${files_dir}/bash_scripts
 
 files_to_run=(`ls ${files_dir}`)
