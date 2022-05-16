@@ -167,8 +167,8 @@ class Images_Data(Dataset):
 
 
 def get_npz_loaders(dataset, batch_size):
-    train_np_data = load_np_data(join(preprocessed_dir, dataset + '.npz'))
-    test_np_data = load_np_data(join(preprocessed_dir, dataset.replace('train', 'test') + '.npz'))
+    train_np_data = load_np_data(join(preprocessed_dir, dataset))
+    test_np_data = load_np_data(join(preprocessed_dir, dataset.replace('train', 'test')))
     test_np_data['anom_label'] = (test_np_data['anom_label'] == 1).astype(int)
 
     train_data = Images_Data(train_np_data, transform=transform_color)
