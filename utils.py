@@ -2,13 +2,18 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
+from os.path import join
+from torch.utils.data import Dataset, DataLoader
 import faiss
 import torchvision.models as models
 import torch.nn.functional as F
 from PIL import ImageFilter
 import random
 from torchvision.transforms import InterpolationMode
+
 BICUBIC = InterpolationMode.BICUBIC
+preprocessed_dir = '/cs/labs/yedid/jonkahana/projects/Red_PANDA/cache/preprocess'
+
 
 class GaussianBlur(object):
     """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709"""
@@ -47,8 +52,9 @@ moco_transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 
 
-class Transform:
+class Transform(torch.nn.Module):
     def __init__(self):
+        super().__init__()
         self.moco_transform = transforms.Compose([
             transforms.RandomResizedCrop(224, scale=(0.2, 1.)),
             transforms.RandomApply([
@@ -58,7 +64,8 @@ class Transform:
             transforms.RandomApply([GaussianBlur([.1, 2.])], p=0.5),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
+        )
 
     def __call__(self, x):
         x_1 = self.moco_transform(x)
@@ -71,6 +78,8 @@ class Model(torch.nn.Module):
         super().__init__()
         if backbone == 152:
             self.backbone = models.resnet152(pretrained=True)
+        elif backbone == 50:
+            self.backbone = models.resnet50(pretrained=True)
         else:
             self.backbone = models.resnet18(pretrained=True)
         self.backbone.fc = torch.nn.Identity()
@@ -80,6 +89,7 @@ class Model(torch.nn.Module):
         z1 = self.backbone(x)
         z_n = F.normalize(z1, dim=-1)
         return z_n
+
 
 def freeze_parameters(model, backbone, train_fc=False):
     if not train_fc:
@@ -94,7 +104,6 @@ def freeze_parameters(model, backbone, train_fc=False):
             p.requires_grad = False
         for p in model.layer2.parameters():
             p.requires_grad = False
-
 
 
 def knn_score(train_set, test_set, n_neighbours=2):
@@ -130,3 +139,43 @@ def get_loaders(dataset, label_class, batch_size, backbone):
     else:
         print('Unsupported Dataset')
         exit()
+
+
+def load_np_data(data_name):
+    data = dict(np.load(join(preprocessed_dir, data_name + '.npz'), allow_pickle=True))
+    data['n_classes'] = len(np.unique(data['classes']))
+    imgs = data['imgs'].astype(np.float32)
+    imgs = imgs / 255.0
+    data['imgs'] = imgs
+    return data
+
+
+class Images_Data(Dataset):
+
+    def __init__(self, data, transform=transforms.ToTensor()):
+        self.imgs = data['imgs']
+        self.labels = data['anom_label']
+        self.domain = data['classes']
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, index):
+        return self.transform(self.imgs[index]), torch.tensor(int(self.labels[index])), \
+               torch.tensor(int(self.domain[index]))
+
+
+def get_npz_loaders(dataset, batch_size):
+    train_np_data = load_np_data(join(preprocessed_dir, dataset + '.npz'))
+    test_np_data = load_np_data(join(preprocessed_dir, dataset.replace('train', 'test') + '.npz'))
+    test_np_data['anom_label'] = (test_np_data['anom_label'] == 1).astype(int)
+
+    train_data = Images_Data(train_np_data, transform=transform_color)
+    train_data_1 = Images_Data(train_np_data, transform=Transform())
+    test_data = Images_Data(test_np_data, transform=transform_color)
+
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=2, drop_last=False)
+    train_loader_1 = DataLoader(train_data_1, batch_size=batch_size, shuffle=True, num_workers=2, drop_last=False)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=2, drop_last=False)
+    return train_loader, test_loader, train_loader_1

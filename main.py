@@ -1,3 +1,4 @@
+import os
 import torch
 from sklearn.metrics import roc_auc_score
 import torch.optim as optim
@@ -5,6 +6,8 @@ import argparse
 import utils
 from tqdm import tqdm
 import torch.nn.functional as F
+
+red_panda_project_dir = '/cs/labs/yedid/jonkahana/projects/Red_PANDA'
 
 
 def contrastive_loss(out_1, out_2):
@@ -97,6 +100,7 @@ def get_score(model, device, train_loader, test_loader):
 
     return auc, train_feature_space
 
+
 def main(args):
     print('Dataset: {}, Normal Label: {}, LR: {}'.format(args.dataset, args.label, args.lr))
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -104,18 +108,26 @@ def main(args):
     model = utils.Model(args.backbone)
     model = model.to(device)
 
-    train_loader, test_loader, train_loader_1 = utils.get_loaders(dataset=args.dataset, label_class=args.label, batch_size=args.batch_size, backbone=args.backbone)
+    # train_loader, test_loader, train_loader_1 = utils.get_loaders(dataset=args.dataset, label_class=args.label, batch_size=args.batch_size, backbone=args.backbone)
+    train_loader, test_loader, train_loader_1 = utils.get_npz_loaders(args.dataset, args.batch_size)
+    args.epochs = int(args.iters / len(train_loader_1)) + 1
     train_model(model, train_loader, test_loader, train_loader_1, device, args)
+
+    save_dir = os.path.join(red_panda_project_dir,
+                            f'cache/preprocess/{args.dataset}/mean_shift__epochs_{args.epochs}__backbone_{args.backbone}')
+    os.makedirs(save_dir, exist_ok=True)
+    torch.save(model.state_dict(), os.path.join(save_dir, 'last.pth'))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--dataset', default='cifar10')
-    parser.add_argument('--epochs', default=20, type=int, metavar='epochs', help='number of epochs')
+    # parser.add_argument('--epochs', default=20, type=int, metavar='epochs', help='number of epochs')
+    parser.add_argument('--iters', default=2000, type=int, metavar='epochs', help='number of epochs')
     parser.add_argument('--label', default=0, type=int, help='The normal class')
     parser.add_argument('--lr', type=float, default=1e-5, help='The initial learning rate.')
     parser.add_argument('--batch_size', default=64, type=int)
-    parser.add_argument('--backbone', default=152, type=int, help='ResNet 18/152')
+    parser.add_argument('--backbone', default=50, type=int, help='ResNet 18/152')
     parser.add_argument('--angular', action='store_true', help='Train with angular center loss')
     args = parser.parse_args()
     main(args)

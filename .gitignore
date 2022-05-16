@@ -1,0 +1,6 @@
+
+duplicate_script.py
+cache/
+logfiles/
+slurm_trash/
+array_files/
