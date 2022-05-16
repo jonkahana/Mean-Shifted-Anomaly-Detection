@@ -186,8 +186,7 @@ class Images_Data(Dataset):
         return len(self.labels)
 
     def __getitem__(self, index):
-        return self.transform(self.imgs[index]), torch.tensor(int(self.labels[index])), \
-               torch.tensor(int(self.domain[index]))
+        return self.transform(self.imgs[index]), torch.tensor(int(self.labels[index]))
 
 
 def get_npz_loaders(dataset, batch_size):
