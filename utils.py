@@ -5,6 +5,7 @@ import numpy as np
 from os.path import join
 from torch.utils.data import Dataset, DataLoader
 import faiss
+import PIL
 import torchvision.models as models
 import torch.nn.functional as F
 from PIL import ImageFilter
@@ -13,6 +14,25 @@ from torchvision.transforms import InterpolationMode
 
 BICUBIC = InterpolationMode.BICUBIC
 preprocessed_dir = '/cs/labs/yedid/jonkahana/projects/Red_PANDA/cache/preprocess'
+
+
+class transform_NumpytoPIL(torch.nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+    def __call__(self, img: torch.Tensor):
+        """
+        Args:
+            img (np.nndarry): numpy image to be converted to PIL.Image
+        Returns:
+            img (numpy.array): numpy image.
+        """
+        if np.max(img) <= 1:
+            img = (img * 255.).astype(np.uint8)
+        if img.shape[0] == 3:
+            img = img.transpose(0, 1, 2)
+        return PIL.Image.fromarray(img)
 
 
 class GaussianBlur(object):
@@ -27,20 +47,23 @@ class GaussianBlur(object):
         return x
 
 
-transform_color = transforms.Compose([transforms.Resize(256),
-                                      transforms.CenterCrop(224),
-                                      transforms.ToTensor(),
-                                      transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+transform_color = transforms.Compose([
+    transform_NumpytoPIL(),
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
 transform_resnet18 = transforms.Compose([
+    transform_NumpytoPIL(),
     transforms.Resize(224, interpolation=BICUBIC),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-
 moco_transform = transforms.Compose([
+    transform_NumpytoPIL(),
     transforms.RandomResizedCrop(224, scale=(0.2, 1.)),
     transforms.RandomApply([
         transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
@@ -56,6 +79,7 @@ class Transform(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.moco_transform = transforms.Compose([
+            transform_NumpytoPIL(),
             transforms.RandomResizedCrop(224, scale=(0.2, 1.)),
             transforms.RandomApply([
                 transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)  # not strengthened
