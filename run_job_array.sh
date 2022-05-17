@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH --job-name=mean_shifted__all
-#SBATCH --exclude=firth-02
+#SBATCH --exclude=firth-02,firth-01
 #SBATCH --cpus-per-task=4
 #SBATCH --array=1-22%22
 #SBATCH --output=slurm_trash/job_%A_%a
