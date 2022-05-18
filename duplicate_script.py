@@ -18,12 +18,13 @@ is_folders = False
 
 
 all_alias_keys = ['cars3d__az_id']
-all_aliases = [["edges2shoes_x64__domain_vs_shoe_type", "edges2shoes_x64__domain_vs_shoe_type_short",
-                "rafd_full_0__angles_id", "rafd_full_1__angles_id", "rafd_full_2__angles_id", "rafd_full_3__angles_id",
-                "rafd_full_4__angles_id", "cars3d__az_id", "cars3d__id_az", "cars3d_small_gaps__id_az",
-                "mnist__digits_angle_short", "mnist_tilt60__digits_angle_short", "mnist_tilt120__digits_angle_short",
-                "rafd__angles_id", "utk__age_old", "utk__age_young", "smallnorb__az_id", "smallnorb__id_az",
-                "celeba__short", "celeba__glass_prot__short", "celeba", "celeba__glass_prot"]]
+all_aliases = [["cars3d_small_gaps__small_psuedo_range__id_az"]]
+# all_aliases = [["edges2shoes_x64__domain_vs_shoe_type", "edges2shoes_x64__domain_vs_shoe_type_short",
+#                 "rafd_full_0__angles_id", "rafd_full_1__angles_id", "rafd_full_2__angles_id", "rafd_full_3__angles_id",
+#                 "rafd_full_4__angles_id", "cars3d__az_id", "cars3d__id_az", "cars3d_small_gaps__id_az",
+#                 "mnist__digits_angle_short", "mnist_tilt60__digits_angle_short", "mnist_tilt120__digits_angle_short",
+#                 "rafd__angles_id", "utk__age_old", "utk__age_young", "smallnorb__az_id", "smallnorb__id_az",
+#                 "celeba__short", "celeba__glass_prot__short", "celeba", "celeba__glass_prot"]]
 
 
 if type(all_alias_keys) != list:
